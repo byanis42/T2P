@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
-
 class RegisterController extends Controller
 {
     public function showForm(): View
@@ -17,13 +16,14 @@ class RegisterController extends Controller
         return view('register');
     }
 
-    public function create(Request $request)
+    public function register(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'string', 'min:5'],
+            'password' => ['required', 'string', 'min:5', 'confirmed'],
         ]);
+
 
         try {
             $user = User::create([

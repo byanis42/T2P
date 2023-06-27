@@ -1,56 +1,40 @@
 <?php
 
-// use App\Http\Controllers\DashboardController;
-// use App\Http\Controllers\LoginController;
-// use App\Http\Controllers\RegisterController;
-// use Illuminate\Support\Facades\Route;
-
-// /*
-// |--------------------------------------------------------------------------
-// | Web Routes
-// |--------------------------------------------------------------------------
-// |
-// | Here is where you can register web routes for your application. These
-// | routes are loaded by the RouteServiceProvider and all of them will
-// | be assigned to the "web" middleware group. Make something great!
-// |
-// */
-
-// Route::group(['middleware' => 'guest'], function () {
-//     Route::get('/register', [RegisterController::class, 'showForm']);
-//     Route::get('/login', [LoginController::class, 'showForm'])
-//         ->name('login');
-// });
-
-// Route::post('/register', [RegisterController::class, 'create']);
-// Route::post('/login', [LoginController::class, 'authenticate']);
-
-// Route::get('/', function () {
-//     return redirect()->intended('dashboard');
-// });
-// Route::get('/dashboard', [DashboardController::class, 'show'])
-//     ->middleware('auth')
-//     ->name('dashboard');
-
-
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\Route;
 
-Route::group(['middleware' => 'guest'], function () {
-    Route::get('/register', [RegisterController::class, 'showForm'])->name('register');
-    Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
-    Route::get('/login', [LoginController::class, 'showForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+Route::get('/', function () {
+    return view('login');
 });
 
-Route::middleware(['auth'])->group(function () {
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// Routes d'authentification
+require __DIR__.'/auth.php';
+
+// Routes accessibles uniquement aux utilisateurs authentifiés
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::post('/tasks', [DashboardController::class, 'storeTask'])->name('tasks.store');
-    Route::delete('/tasks/{task}', [DashboardController::class, 'deleteTask'])->name('tasks.delete');
-    Route::put('/tasks/{task}', [DashboardController::class, 'updateTaskStatus'])->name('tasks.updateStatus');
+    Route::post('/dashboard/task', [DashboardController::class, 'storeTask'])->name('storeTask');
+    Route::delete('/dashboard/task/{task}', [DashboardController::class, 'deleteTask'])->name('deleteTask');
+    Route::patch('/dashboard/task/{task}', [DashboardController::class, 'updateTaskStatus'])->name('updateTaskStatus');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::redirect('/', '/dashboard');
+// Routes pour l'inscription
+Route::get('/register', [RegisterController::class, 'showForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'create']);

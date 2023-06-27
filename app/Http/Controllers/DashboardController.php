@@ -4,76 +4,76 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     /**
-     * Affiche la page du tableau de bord.
+     * Display a listing of tasks.
      *
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $tasksTodo = Task::where('user_id', auth()->id())
-            ->where('status', 'todo')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $todoTasks = Auth::user()->tasks()->where('completed', false)->get();
+        $completedTasks = Auth::user()->tasks()->where('completed', true)->get();
 
-        $tasksCompleted = Task::where('user_id', auth()->id())
-            ->where('status', 'completed')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return view('dashboard', ['todoTasks' => $todoTasks, 'completedTasks' => $completedTasks]);
 
-        return view('dashboard', compact('tasksTodo', 'tasksCompleted'));
+       // $tasks = Auth::user()->tasks;
+
+        //return view('dashboard', ['tasks' => $tasks]);
     }
 
     /**
-     * Ajoute une nouvelle tâche à la liste "À faire" (TODO).
+     * Store a newly created task in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\Response
      */
     public function storeTask(Request $request)
     {
-        $request->validate([
-            'task' => 'required|string|max:255',
+        $this->validate($request, [
+            'description' => 'required',
         ]);
 
-        $task = new Task();
-        $task->user_id = auth()->id();
-        $task->task = $request->task;
-        $task->status = 'todo';
+        $task = new Task;
+        $task->description = $request->description;
+        $task->user_id = Auth::user()->id;
         $task->save();
 
-        return redirect()->route('dashboard')->with('success', 'Tâche ajoutée avec succès.');
+        return back()->with('success', 'Task added successfully');
     }
 
     /**
-     * Supprime une tâche de la liste.
+     * Remove the specified task from storage.
      *
      * @param  \App\Models\Task  $task
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\Response
      */
     public function deleteTask(Task $task)
     {
+        $this->authorize('delete', $task);
+
         $task->delete();
 
-        return redirect()->route('dashboard')->with('success', 'Tâche supprimée avec succès.');
+        return back()->with('success', 'Task deleted successfully');
     }
 
     /**
-     * Met à jour le statut d'une tâche.
+     * Update the status of the specified task in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Task  $task
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\Response
      */
     public function updateTaskStatus(Request $request, Task $task)
     {
-        $status = $request->input('status');
-        $task->status = $status;
+        $this->authorize('update', $task);
+
+        $task->completed = !$task->completed; 
         $task->save();
 
-        return redirect()->route('dashboard')->with('success', 'Statut de la tâche mis à jour avec succès.');
+        return back()->with('success', 'Task updated successfully');
     }
 }
