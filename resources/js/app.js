@@ -1,7 +1,6 @@
 import './bootstrap';
 import './background';
-import { checked } from './todo';
-window.checked = checked;
+import './dashboard';
 
 
 console.log('Tim presente toi apres avoir lu ce message')
