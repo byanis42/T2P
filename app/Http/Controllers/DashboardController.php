@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     public function index() {
-        return view('dashboard');
+        $tasks = Task::where('user_id', Auth::id())->get();
+        return view('dashboard', compact('tasks'));
     }
+
 
     public function storeTask(Request $request) {
         $task = new Task();

@@ -81,6 +81,8 @@ function deleteTask(deleteId, filter) {
     showTodo(filter);
 }
 
+
+
 clearAll.addEventListener("click", () => {
     isEditTask = false;
     todos.splice(0, todos.length);
